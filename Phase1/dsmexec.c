@@ -1,4 +1,5 @@
 #include "common_impl.h"
+#define TAILLE_MAX 128
 
 /* variables globales */
 
@@ -36,18 +37,15 @@ int compte_lignes(FILE *fichier){
   return n_ligne;
 }
 
-char tableau_mot(FILE *fichier, int n_ligne){
+char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   rewind(fichier);
   int i;
-  int taille_max=50;
-  char chaine[taille_max];
-  char tableau[n_ligne][taille_max];
   for(i=0;i<n_ligne;i++){
-    fgets(chaine, taille_max, fichier);
-    strcpy(tableau[i], chaine);
-    printf("%s",tableau[i]);
+    fscanf(fichier, "%s\n", tableau[i]);
+    printf("%s\n",tableau[i]);
   }
   fclose(fichier);
+  return tableau;
 }
 
 
@@ -60,15 +58,17 @@ int main(int argc, char *argv[])
      int num_procs = 0;
      int i;
      FILE *fichier=NULL;
-     fichier= fopen("machine file","r");
-     numprocs = compte_lignes(fichier);
-     rewind(fichier);
-     char tableau[num_procs][taille_max];
-     for(i=0;i<num_procs;i++){
-       fgets(chaine, taille_max, fichier);
-       strcpy(tableau[i], chaine);
-     }
-     fclose(fichier);
+     fichier= fopen("machine_file","r");
+     num_procs = compte_lignes(fichier);
+     printf("%d\n", num_procs);
+     char **tableau;
+     tableau = malloc(num_procs * TAILLE_MAX);
+		for (i = 0; i < num_procs; i++) {
+			tableau[i] = malloc(TAILLE_MAX);
+		}
+
+     tableau=tableau_mot(tableau, fichier, num_procs);
+
 
      /* Mise en place d'un traitant pour recuperer les fils zombies*/
      /* XXX.sa_handler = sigchld_handler; */

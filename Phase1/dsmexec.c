@@ -83,7 +83,10 @@ int main(int argc, char *argv[])
 
      /* creation des fils */
      for(i = 0; i < num_procs ; i++) {
-
+       int pipe_stdout[2];
+       pipe(pipe_stdout);
+       int pipe_stderr[2];
+       pipe(pipe_stderr);
 	/* creation du tube pour rediriger stdout */
 
 	/* creation du tube pour rediriger stderr */
@@ -92,6 +95,18 @@ int main(int argc, char *argv[])
 	if(pid == -1) ERROR_EXIT("fork");
 
 	if (pid == 0) { /* fils */
+close(pipe_stdout[1]);
+close(pipe_stderr[1]);
+
+    close(STDOUT_FILENO);
+    int d=dup(pipe_stdout[0]);
+    close(pipe_stdout[0]);
+    close(STDERR_FILENO);
+    fprintf(stdout,"%d:%u\n",i, d);
+    int ds=dup(pipe_stderr[0]);
+    close(pipe_stderr[0]);
+    fprintf(stdout,"%d:%u\n", i,ds);
+
 
 	   /* redirection stdout */
 
@@ -103,6 +118,8 @@ int main(int argc, char *argv[])
 	   /* execvp("ssh",newargv); */
 
 	} else  if(pid > 0) { /* pere */
+    close(pipe_stdout[0]);
+    close(pipe_stderr[0]);
 	   /* fermeture des extremites des tubes non utiles */
 	   num_procs_creat++;
 	}
@@ -110,7 +127,7 @@ int main(int argc, char *argv[])
 
 
      for(i = 0; i < num_procs ; i++){
-
+wait(NULL);
 	/* on accepte les connexions des processus dsm */
 
 	/*  On recupere le nom de la machine distante */

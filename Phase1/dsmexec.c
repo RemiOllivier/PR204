@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 printf("%d\n", port_num);
      arg[0]="ssh";
      arg[1]=tableau[i];
-     arg[2]="~/Projet_Reseau/PR204/Phase1/bin/dsmwrap";
+     arg[2]="~/Documents/Enseirb/PR204/Phase1/bin/dsmwrap";
      arg[3]=adresse;
      arg[4]=port;
      arg[5]=NULL;

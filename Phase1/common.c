@@ -40,6 +40,7 @@ int nb_connexion=20;
      }
 
  	*port_num = ntohs(serv_addr.sin_port);
+  printf("port_num=%d\n", *port_num);
 
  	return fd;
 
@@ -99,8 +100,9 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   rewind(fichier);
   int i;
   for(i=0;i<n_ligne;i++){
-    fscanf(fichier, "%s\n", tableau[i]);
-    printf("%s\n",tableau[i]);
+    fscanf(fichier, "%s", tableau[i]);
+  //  strtok(tableau[i], "\n");
+    printf("%syyy",tableau[i]);
   }
   fclose(fichier);
   return tableau;

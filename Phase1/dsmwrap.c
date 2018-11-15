@@ -18,8 +18,8 @@ int main(int argc, char **argv)
       sin.sin_family=AF_INET;
       sin.sin_port=htons(atoi(argv[2]));
       inet_aton(hostname_to_ip(argv[1]), &sin.sin_addr);
-      printf("%s\n", hostname_to_ip(argv[1]));
-      printf("%d\n", htons(atoi(argv[2])));
+      printf("adresse:%s\n", hostname_to_ip(argv[1]));
+      printf("port:%d\n", htons(atoi(argv[2])));
       fflush(stdout);
 
       //get the socket
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
    /* Envoi du pid au lanceur */
    pid_t pid=getpid();
-   char *pid_envoie;
+   char *pid_envoie=malloc(10*sizeof(char));;
    sprintf(pid_envoie,"%d", pid);
    printf("%d, %s\n", pid, pid_envoie);
 do_write(sockfd, pid_envoie, sizeof(pid_envoie));

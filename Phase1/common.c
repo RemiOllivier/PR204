@@ -99,7 +99,7 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   rewind(fichier);
   int i;
   for(i=0;i<n_ligne;i++){
-    fscanf(fichier, "%s\n", tableau[i]);
+    fscanf(fichier, "%s", tableau[i]);
     printf("%s\n",tableau[i]);
   }
   fclose(fichier);

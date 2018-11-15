@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
      proc_array=malloc(num_procs*sizeof(dsm_proc_t));
      printf("%d\n", num_procs);
      char **tableau;
-     tableau = malloc(num_procs * TAILLE_MAX);
+     tableau = malloc(num_procs * sizeof(char *));
 		for (i = 0; i < num_procs; i++) {
 			tableau[i] = malloc(TAILLE_MAX);
 		}
@@ -115,7 +115,7 @@ printf("port:%d\n", port_num);
      printf("%s\n", adresse);
      char **arg=malloc(5*sizeof(char*));
      char *port=malloc(sizeof(char));
-     sprintf(port, "%d", ntohs(port_num));
+     sprintf(port, "%d",port_num);
 printf("%d\n", port_num);
      arg[0]="ssh";
      arg[1]=tableau[i];
@@ -135,7 +135,7 @@ printf("%d\n", port_num);
      }
 
      for(i = 0; i < num_procs ; i++){
-wait(NULL);
+//wait(NULL);
 	/* on accepte les connexions des processus dsm */
   struct sockaddr_in sinclient={0};
 
@@ -149,20 +149,20 @@ wait(NULL);
 	/*  On recupere le nom de la machine distante */
 	/* 1- d'abord la taille de la chaine */
 	/* 2- puis la chaine elle-meme */
-  // int len_socket =100;
-  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name,len_socket)<0){
-  //   perror("server: read");
-  // }
+  int len_socket =100;
+  if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name,len_socket)<0){
+    perror("server: read");
+  }
 
 	/* On recupere le pid du processus distant  */
-  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].pid,len_socket)<0){
-  //   perror("server: read");
-  // }
+  if(read(proc_array[i].connect_info.sockfd, proc_array[i].pid,len_socket)<0){
+    perror("server: read");
+  }
 	/* On recupere le numero de port de la socket */
 	/* d'ecoute des processus distants */
-  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.port,len_socket)<0){
-  //   perror("server: read");
-  // }
+  if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.port,len_socket)<0){
+    perror("server: read");
+  }
      }
 
      /* envoi du nombre de processus aux processus dsm*/

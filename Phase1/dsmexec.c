@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
      int port_num=0;
      int nb_connexions=20;
      int sockfd = creer_socket(&port_num);
-
+printf("port:%d\n", port_num);
      /* creation des fils */
      for(i = 0; i < num_procs ; i++) {
        // int pipe_stdout[2];
@@ -149,20 +149,20 @@ wait(NULL);
 	/*  On recupere le nom de la machine distante */
 	/* 1- d'abord la taille de la chaine */
 	/* 2- puis la chaine elle-meme */
-  int len_socket =100;
-  if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name,len_socket)<0){
-    perror("server: read");
-  }
+  // int len_socket =100;
+  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name,len_socket)<0){
+  //   perror("server: read");
+  // }
 
 	/* On recupere le pid du processus distant  */
-  if(read(proc_array[i].connect_info.sockfd, proc_array[i].pid,len_socket)<0){
-    perror("server: read");
-  }
+  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].pid,len_socket)<0){
+  //   perror("server: read");
+  // }
 	/* On recupere le numero de port de la socket */
 	/* d'ecoute des processus distants */
-  if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.port,len_socket)<0){
-    perror("server: read");
-  }
+  // if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.port,len_socket)<0){
+  //   perror("server: read");
+  // }
      }
 
      /* envoi du nombre de processus aux processus dsm*/

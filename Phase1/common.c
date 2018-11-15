@@ -14,35 +14,35 @@
 
 //Create the socket
 
- int creer_socket(int *port_num) {
-     int fd;
-     struct sockaddr_in serv_addr;
- 	fd=do_socket(AF_INET, SOCK_STREAM,0);
- 	memset(&serv_addr,0,sizeof(serv_addr));
-    serv_addr=init_serv_addr();
+int creer_socket(int *port_num) {
+  int fd;
+  struct sockaddr_in serv_addr;
+  fd=do_socket(AF_INET, SOCK_STREAM,0);
+  memset(&serv_addr,0,sizeof(serv_addr));
+  serv_addr=init_serv_addr(serv_addr);
 
- 	if(fd == -1) {
- 		perror("ERROR in do_socket()");
- 	}
-int nb_connexion=20;
- 	if(bind(fd, (struct sockaddr*)(&serv_addr), sizeof(struct sockaddr_in)) == -1){
- 		perror("ERROR with bind()");
-     }
+  if(fd == -1) {
+    perror("ERROR in do_socket()");
+  }
+  int nb_connexion=20;
+  if(bind(fd, (struct sockaddr*)(&serv_addr), sizeof(struct sockaddr_in)) == -1){
+    perror("ERROR with bind()");
+  }
 
-     if(listen(fd, nb_connexion) == -1){
-    		perror("ERROR with bind()");
-        }
+  if(listen(fd, nb_connexion) == -1){
+    perror("ERROR with bind()");
+  }
 
-    socklen_t len;
- 	len = sizeof(struct sockaddr*);
- 	if(getsockname(fd, (struct sockaddr*)(&serv_addr), &len) == -1){
- 		perror("error with getsockname()");
-     }
+  socklen_t len;
+  len = sizeof(struct sockaddr*);
+  if(getsockname(fd, (struct sockaddr*)(&serv_addr), &len) == -1){
+    perror("error with getsockname()");
+  }
 
- 	*port_num = ntohs(serv_addr.sin_port);
-  printf("port_num=%d\n", *port_num);
+  *port_num = ntohs(serv_addr.sin_port);
+  printf("port num cote server=%d\n", *port_num);
 
- 	return fd;
+  return fd;
 
    /* fonction de creation et d'attachement */
    /* d'une nouvelle socket */
@@ -74,8 +74,7 @@ int do_socket(int domain, int type, int protocol) {
 
 // Server initialization
 
-struct sockaddr_in init_serv_addr(){
-  struct sockaddr_in serv_addr;
+struct sockaddr_in init_serv_addr(struct sockaddr_in serv_addr){
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   serv_addr.sin_port = 0;
@@ -83,7 +82,6 @@ struct sockaddr_in init_serv_addr(){
 }
 
 int compte_lignes(FILE *fichier){
-  rewind(fichier);
   int caractere;
   int n_ligne=0;
   caractere=0;

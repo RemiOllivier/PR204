@@ -39,21 +39,21 @@ int main(int argc, char **argv)
 }
 
    /* Envoi du nom de machine au lanceur */
-
-   do_write(sockfd, adresse, sizeof(adresse));
-
-   /* Envoi du pid au lanceur */
-   pid_t pid=getpid();
-   char *pid_envoie=malloc(10*sizeof(char));;
-   sprintf(pid_envoie,"%d", pid);
-   printf("%d, %s\n", pid, pid_envoie);
-do_write(sockfd, pid_envoie, sizeof(pid_envoie));
-   /* Creation de la socket d'ecoute pour les */
-   /* connexions avec les autres processus dsm */
-int socket_ecoute=creer_socket(&port);
-   /* Envoi du numero de port au lanceur */
-   sprintf(port_envoie,"%d", port);
-   do_write(sockfd, port_envoie, sizeof(port_envoie));
+//
+//    do_write(sockfd, adresse, sizeof(adresse));
+//
+//    /* Envoi du pid au lanceur */
+//    pid_t pid=getpid();
+//    char *pid_envoie=malloc(10*sizeof(char));;
+//    sprintf(pid_envoie,"%d", pid);
+//    printf("%d, %s\n", pid, pid_envoie);
+// do_write(sockfd, pid_envoie, sizeof(pid_envoie));
+//    /* Creation de la socket d'ecoute pour les */
+//    /* connexions avec les autres processus dsm */
+// int socket_ecoute=creer_socket(&port);
+//    /* Envoi du numero de port au lanceur */
+//    sprintf(port_envoie,"%d", port);
+//    do_write(sockfd, port_envoie, sizeof(port_envoie));
    /* pour qu'il le propage à tous les autres */
    /* processus dsm */
 

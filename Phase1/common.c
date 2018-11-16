@@ -55,6 +55,7 @@ int creer_socket(int *port_num) {
 /* et le processus intermediaire. N'oubliez pas */
 /* de declarer le prototype de ces nouvelles */
 /* fonctions dans common_impl.h */
+
 int do_socket(int domain, int type, int protocol) {
   int sockfd;
   int yes = 1;
@@ -99,8 +100,7 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   int i;
   for(i=0;i<n_ligne;i++){
     fscanf(fichier, "%s", tableau[i]);
-    //  strtok(tableau[i], "\n");
-    printf("%s",tableau[i]);
+    printf("tableau[%d]=%s",i,tableau[i]);
   }
   fclose(fichier);
   return tableau;
@@ -116,18 +116,25 @@ int do_accept(int sockfd){
 }
 
 
-void do_write(int sockfd, char *message, int len){
-  if(write(sockfd,message,len)<0){
-    perror("client: write");
-    exit(1);
-  }
+int do_write(int sockfd, char *buf){
+  char *taille = malloc(sizeof(size_t));
+  size_t len = strlen(buf);
+  sprintf(taille, "%d", (int) len);
+  write(sockfd, taille, sizeof(size_t));
+  write(sockfd, buf, len);
+  return 0;
 }
 
-void do_read(int sockfd, char *buf, int len){
-  if(read(sockfd,buf,len)<0){
-    perror("client: read");
-    exit(1);
+ssize_t do_read(int sockfd, char *buf){
+  ssize_t rl;
+  ssize_t size;
+  char *taille = malloc(sizeof(size_t));
+  rl = read(sockfd, taille, sizeof(size_t));
+  if (rl == 0) {
+    return 0;
   }
+  size = read(sockfd, buf, (size_t) atoi(taille));
+  return size;
 }
 
 char * hostname_to_ip(char* hostname){
@@ -139,7 +146,7 @@ char * hostname_to_ip(char* hostname){
   }
   addr_list=(struct in_addr **) he->h_addr_list;
   for(i=0; addr_list[i] !=NULL; i++){
-    return addr_list[i];
+    return inet_ntoa(*addr_list[i]);
   }
   return NULL;
 }

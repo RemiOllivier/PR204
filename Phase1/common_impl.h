@@ -15,12 +15,13 @@
 /* definition du type des infos */
 /* de connexion des processus dsm */
 struct dsm_proc_conn  {
-   int rank;
-   char* machine_name;
-   int sockfd;
-   int port;
-   /* a completer */
+  int rank;
+  char* machine_name;
+  int sockfd;
+  int port;
+  /* a completer */
 };
+
 typedef struct dsm_proc_conn dsm_proc_conn_t;
 
 /* definition du type des infos */
@@ -29,6 +30,7 @@ struct dsm_proc {
   pid_t pid;
   dsm_proc_conn_t connect_info;
 };
+
 typedef struct dsm_proc dsm_proc_t;
 
 int creer_socket(int *port_num);
@@ -37,6 +39,6 @@ struct sockaddr_in init_serv_addr();
 int compte_lignes(FILE *fichier);
 char** tableau_mot(char **tableau, FILE *fichier, int n_ligne);
 int do_accept(int sockfd);
-void do_write(int sockfd, char *message, int len);
-void do_read(int sockfd, char *buf, int len);
-struct in_addr * hostname_to_ip(char* hostname);
+int do_write(int sockfd, char *message);
+ssize_t do_read(int sockfd, char *buf);
+char * hostname_to_ip(char* hostname);

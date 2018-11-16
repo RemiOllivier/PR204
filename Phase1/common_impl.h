@@ -26,7 +26,7 @@ typedef struct dsm_proc_conn dsm_proc_conn_t;
 /* definition du type des infos */
 /* d'identification des processus dsm */
 struct dsm_proc {
-  char pid;
+  pid_t pid;
   dsm_proc_conn_t connect_info;
 };
 typedef struct dsm_proc dsm_proc_t;
@@ -39,4 +39,4 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne);
 int do_accept(int sockfd);
 void do_write(int sockfd, char *message, int len);
 void do_read(int sockfd, char *buf, int len);
-char* hostname_to_ip(char* hostname);
+struct in_addr * hostname_to_ip(char* hostname);

@@ -19,7 +19,7 @@ int creer_socket(int *port_num) {
   struct sockaddr_in serv_addr;
   fd=do_socket(AF_INET, SOCK_STREAM,0);
   memset(&serv_addr,0,sizeof(serv_addr));
-  serv_addr=init_serv_addr();
+  serv_addr=init_serv_addr(serv_addr);
 
   if(fd == -1) {
     perror("ERROR in do_socket()");
@@ -40,7 +40,7 @@ int creer_socket(int *port_num) {
   }
 
   *port_num = ntohs(serv_addr.sin_port);
-  printf("port_num=%d\n", *port_num);
+  printf("port num cote server=%d\n", *port_num);
 
   return fd;
 
@@ -74,8 +74,7 @@ int do_socket(int domain, int type, int protocol) {
 
 // Server initialization
 
-struct sockaddr_in init_serv_addr(){
-  struct sockaddr_in serv_addr;
+struct sockaddr_in init_serv_addr(struct sockaddr_in serv_addr){
   serv_addr.sin_family = AF_INET;
   serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   serv_addr.sin_port = 0;
@@ -83,7 +82,6 @@ struct sockaddr_in init_serv_addr(){
 }
 
 int compte_lignes(FILE *fichier){
-  rewind(fichier);
   int caractere;
   int n_ligne=0;
   caractere=0;
@@ -132,7 +130,7 @@ void do_read(int sockfd, char *buf, int len){
   }
 }
 
-char* hostname_to_ip(char* hostname){
+char * hostname_to_ip(char* hostname){
   struct hostent *he;
   struct in_addr **addr_list;
   int i;
@@ -141,7 +139,7 @@ char* hostname_to_ip(char* hostname){
   }
   addr_list=(struct in_addr **) he->h_addr_list;
   for(i=0; addr_list[i] !=NULL; i++){
-    return inet_ntoa(*addr_list[i]);
+    return addr_list[i];
   }
   return NULL;
 }

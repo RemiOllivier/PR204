@@ -14,40 +14,41 @@
 
 //Create the socket
 
- int creer_socket(int *port_num) {
-     int fd;
-     struct sockaddr_in serv_addr;
- 	fd=do_socket(AF_INET, SOCK_STREAM,0);
- 	memset(&serv_addr,0,sizeof(serv_addr));
-    serv_addr=init_serv_addr();
+int creer_socket(int *port_num) {
+  int fd;
+  struct sockaddr_in serv_addr;
+  fd=do_socket(AF_INET, SOCK_STREAM,0);
+  memset(&serv_addr,0,sizeof(serv_addr));
+  serv_addr=init_serv_addr();
 
- 	if(fd == -1) {
- 		perror("ERROR in do_socket()");
- 	}
-int nb_connexion=20;
- 	if(bind(fd, (struct sockaddr*)(&serv_addr), sizeof(struct sockaddr_in)) == -1){
- 		perror("ERROR with bind()");
-     }
+  if(fd == -1) {
+    perror("ERROR in do_socket()");
+  }
+  int nb_connexion=20;
+  if(bind(fd, (struct sockaddr*)(&serv_addr), sizeof(struct sockaddr_in)) == -1){
+    perror("ERROR with bind()");
+  }
 
-     if(listen(fd, nb_connexion) == -1){
-    		perror("ERROR with bind()");
-        }
+  if(listen(fd, nb_connexion) == -1){
+    perror("ERROR with bind()");
+  }
 
-    socklen_t len;
- 	len = sizeof(struct sockaddr*);
- 	if(getsockname(fd, (struct sockaddr*)(&serv_addr), &len) == -1){
- 		perror("error with getsockname()");
-     }
+  socklen_t len;
+  len = sizeof(struct sockaddr*);
+  if(getsockname(fd, (struct sockaddr*)(&serv_addr), &len) == -1){
+    perror("error with getsockname()");
+  }
 
- 	*port_num = ntohs(serv_addr.sin_port);
+  *port_num = ntohs(serv_addr.sin_port);
+  printf("port_num=%d\n", *port_num);
 
- 	return fd;
+  return fd;
 
-   /* fonction de creation et d'attachement */
-   /* d'une nouvelle socket */
-   /* renvoie le numero de descripteur */
-   /* et modifie le parametre port_num */
- }
+  /* fonction de creation et d'attachement */
+  /* d'une nouvelle socket */
+  /* renvoie le numero de descripteur */
+  /* et modifie le parametre port_num */
+}
 
 /* Vous pouvez ecrire ici toutes les fonctions */
 /* qui pourraient etre utilisees par le lanceur */
@@ -100,7 +101,8 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   int i;
   for(i=0;i<n_ligne;i++){
     fscanf(fichier, "%s", tableau[i]);
-    printf("%s\n",tableau[i]);
+    //  strtok(tableau[i], "\n");
+    printf("%s",tableau[i]);
   }
   fclose(fichier);
   return tableau;
@@ -117,17 +119,17 @@ int do_accept(int sockfd){
 
 
 void do_write(int sockfd, char *message, int len){
-if(write(sockfd,message,len)<0){
-  perror("client: write");
-  exit(1);
-}
+  if(write(sockfd,message,len)<0){
+    perror("client: write");
+    exit(1);
+  }
 }
 
 void do_read(int sockfd, char *buf, int len){
-if(read(sockfd,buf,len)<0){
-  perror("client: read");
-  exit(1);
-}
+  if(read(sockfd,buf,len)<0){
+    perror("client: read");
+    exit(1);
+  }
 }
 
 char* hostname_to_ip(char* hostname){
@@ -141,5 +143,5 @@ char* hostname_to_ip(char* hostname){
   for(i=0; addr_list[i] !=NULL; i++){
     return inet_ntoa(*addr_list[i]);
   }
-return NULL;
+  return NULL;
 }

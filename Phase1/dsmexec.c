@@ -152,32 +152,55 @@ int main(int argc, char *argv[])
       if(proc_array[i].connect_info.sockfd<0){
         perror("server: accept");
       }
-      printf("socket=%d\n", proc_array[i].connect_info.sockfd);
       /*  On recupere le nom de la machine distante */
       /* 1- d'abord la taille de la chaine */
       /* 2- puis la chaine elle-meme */
-      int len_socket =100;
-      sleep(2);
-      if(read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name,len_socket)<0){
-        perror("server: read");
+
+
+      ssize_t rl;
+	ssize_t r;
+	char *taille = malloc(sizeof(size_t));
+
+	rl = read(proc_array[i].connect_info.sockfd, taille, sizeof(size_t));
+	if (rl == 0) {
+		return 0;
+	}
+r = read(proc_array[i].connect_info.sockfd,  proc_array[i].connect_info.machine_name, (size_t) atoi(taille));
+
+
+
+      char* buf=malloc(100);
+      memset(buf, 0, 100*sizeof(char));
+      // char *size=malloc(sizeof(char));
+      // if(read(proc_array[i].connect_info.sockfd, size,sizeof(int))<0){
+      //   perror("server: read");
+      // }
+      // printf("size=%s\n", size);
+      // fflush(stdout);
+      // int *size2=(int*)size;
+      
+      if(do_read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name)<0){
+         perror("server: read");
       }
       printf("machine name=%s\n", proc_array[i].connect_info.machine_name);
       fflush(stdout);
       /* On recupere le pid du processus distant  */
-      if(read(proc_array[i].connect_info.sockfd, &proc_array[i].pid,len_socket)<0){
+      if(do_read(proc_array[i].connect_info.sockfd,buf)<0){
         perror("server: read");
       }
-      printf("port=%d\n", proc_array[i].pid);
+       proc_array[i].pid=atoi(buf);
+      printf("pid=%d\n", proc_array[i].pid);
       fflush(stdout);
 
       /* On recupere le numero de port de la socket */
       /* d'ecoute des processus distants */
-      if(read(proc_array[i].connect_info.sockfd, &proc_array[i].connect_info.port,len_socket)<0){
+      if(do_read(proc_array[i].connect_info.sockfd, buf)<0){
         perror("server: read");
       }
       fflush(stdout);
+      proc_array[i].connect_info.port=atoi(buf);
 
-      printf("pid=%d\n", proc_array[i].connect_info.port);
+      printf("port=%d\n", proc_array[i].connect_info.port);
 
     }
 

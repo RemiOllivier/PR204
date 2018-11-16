@@ -37,6 +37,6 @@ struct sockaddr_in init_serv_addr();
 int compte_lignes(FILE *fichier);
 char** tableau_mot(char **tableau, FILE *fichier, int n_ligne);
 int do_accept(int sockfd);
-void do_write(int sockfd, char *message, int len);
-void do_read(int sockfd, char *buf, int len);
+int do_write(int fd, char *message);
+ssize_t do_read(int fd, char *buf);
 char * hostname_to_ip(char* hostname);

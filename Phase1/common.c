@@ -116,18 +116,29 @@ int do_accept(int sockfd){
 }
 
 
-void do_write(int sockfd, char *message, int len){
-if(write(sockfd,message,len)<0){
-  perror("client: write");
-  exit(1);
-}
+int do_write(int fd, char *buf){
+  char *taille = malloc(sizeof(size_t));
+  	size_t len = strlen(buf);
+
+  	sprintf(taille, "%d", (int) len);
+  	write(fd, taille, sizeof(size_t));
+
+  	write(fd, buf, len);
+
+  return 0;
 }
 
-void do_read(int sockfd, char *buf, int len){
-if(read(sockfd,buf,len)<0){
-  perror("client: read");
-  exit(1);
-}
+ssize_t do_read(int fd, char *buf){
+  ssize_t rl;
+  	ssize_t r;
+  	char *taille = malloc(sizeof(size_t));
+
+  	rl = read(fd, taille, sizeof(size_t));
+  	if (rl == 0) {
+  		return 0;
+  	}
+  	r = read(fd, buf, (size_t) atoi(taille));
+  return r;
 }
 
 char * hostname_to_ip(char* hostname){

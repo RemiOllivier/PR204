@@ -130,7 +130,7 @@ if(read(sockfd,buf,len)<0){
 }
 }
 
-struct in_addr * hostname_to_ip(char* hostname){
+char * hostname_to_ip(char* hostname){
   struct hostent *he;
   struct in_addr **addr_list;
   int i;
@@ -139,7 +139,7 @@ struct in_addr * hostname_to_ip(char* hostname){
   }
   addr_list=(struct in_addr **) he->h_addr_list;
   for(i=0; addr_list[i] !=NULL; i++){
-    return addr_list[i];
+    return inet_ntoa(*addr_list[i]);
   }
 return NULL;
 }

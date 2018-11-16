@@ -17,8 +17,9 @@ int main(int argc, char **argv)
    struct sockaddr_in sin;
       sin.sin_family=AF_INET;
       sin.sin_port=htons(atoi(argv[2]));
-      memcpy(hostname_to_ip(argv[1]), &sin.sin_addr, sizeof(sin.sin_addr));
-      //printf("adresse:%s\n", hostname_to_ip(argv[1]));
+      //memcpy(hostname_to_ip(argv[1]), &sin->sin_addr, sizeof(sin->sin_addr));
+      inet_aton(hostname_to_ip(argv[1]), &(sin.sin_addr));
+      printf("adresse:%d\n", &sin.sin_addr);
       printf("port:%d\n", htons(atoi(argv[2])));
       fflush(stdout);
 
@@ -30,17 +31,18 @@ int main(int argc, char **argv)
       char *adresse=malloc(100*sizeof(char));
       memset(adresse, 0, 100*sizeof(char));
       gethostname(adresse, 100);
+      printf("adresse==%s\n", adresse);
       fflush(stdout);
     int sockfd= socket(AF_INET, SOCK_STREAM,0);
     printf("%d\n", sockfd);
-    // if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
-    // perror("ERROR setting socket options");
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+     perror("ERROR setting socket options");
     if (connect(sockfd,(struct sockaddr*)&sin,sizeof(sin))<0) {
  perror("client: connect");
 }
 
    /* Envoi du nom de machine au lanceur */
-
+do_write(sockfd, adresse, sizeof(adresse));
    do_write(sockfd, adresse, sizeof(adresse));
 
    /* Envoi du pid au lanceur */
@@ -60,5 +62,5 @@ int socket_ecoute=creer_socket(&port);
 
    /* on execute la bonne commande */
 
-   return 0;
+   exit (0);
 }

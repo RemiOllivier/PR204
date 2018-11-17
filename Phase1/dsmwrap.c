@@ -62,6 +62,19 @@ int main(int argc, char **argv)
   do_write(sockfd, port_envoi);
 
   /* on execute la bonne commande */
+  char **arg=malloc((argc-3)*sizeof(char*));
+  arg[0]=argv[3];
+  int numero_arg;
+  for (numero_arg=1; numero_arg<argc; numero_arg++){
+    arg[numero_arg]=argv[numero_arg+3];
+  }
+  arg[argc]=NULL;
 
+
+  /* jump to new prog : */
+  sleep(1);
+  if(execvp(argv[3],arg)==-1){
+    perror("dsmwrap exec: ");
+  }
   exit (0);
 }

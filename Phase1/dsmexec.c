@@ -19,6 +19,7 @@ volatile int num_procs_creat = 0;
 void usage(void)
 {
   fprintf(stdout,"Usage : dsmexec machine_file executable arg1 arg2 ...\n");
+  fprintf(stdout,"./bin/dsmexec machine_file ~/Documents/Enseirb/PR204/Phase1/bin/truc coucouco\n");
   fflush(stdout);
   exit(EXIT_FAILURE);
 }
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
     int num_procs = 0;
     int i;
     FILE *fichier=NULL;
-    fichier= fopen("machine_file","r");
+    fichier= fopen(argv[1],"r");
     num_procs = compte_lignes(fichier);
     proc_array=malloc(num_procs*sizeof(dsm_proc_t));
     printf("Nombre de processus:%d\n", num_procs);
@@ -102,20 +103,26 @@ int main(int argc, char *argv[])
 
         /* Creation du tableau d'arguments pour le ssh */
         int len=100;
+        int numero_arg=3;
         char adresse[100];
         gethostname(adresse, len);
         printf("%s\n", adresse);
-        char **arg=malloc(5*sizeof(char*));
+        char **arg=malloc((argc+10)*sizeof(char*));
         char *port=malloc(sizeof(char));
         sprintf(port, "%d",port_num);
         printf("%d\n", port_num);
         arg[0]="ssh";
         arg[1]=tableau[i];
-        arg[2]="~/Bureau/PR204/Phase1/bin/dsmwrap";
+        arg[2]="~/Documents/Enseirb/PR204/Phase1/bin/dsmwrap";
         arg[3]=adresse;
         arg[4]=port;
-        arg[5]=NULL;
+        arg[5]=argv[2];
+        
+        for (numero_arg=3; numero_arg<argc; numero_arg++){
+          arg[3+numero_arg]=argv[numero_arg];
+        }
 
+        arg[3+argc]=NULL;
         /* jump to new prog : */
         execvp("ssh",arg);
       }
@@ -145,7 +152,8 @@ int main(int argc, char *argv[])
       /*  On recupere le nom de la machine distante */
       /* 1- d'abord la taille de la chaine */
       /* 2- puis la chaine elle-meme */
-      if(do_read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name)<0){
+      memset(proc_array[i].connect_info.machine_name, 0, 100*sizeof(char));
+      if(do_read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name)==NULL){
         perror("server: read");
       }
       printf("machine name=%s\n", proc_array[i].connect_info.machine_name);
@@ -154,7 +162,7 @@ int main(int argc, char *argv[])
       /* On recupere le pid du processus distant  */
       char* buf=malloc(100);
       memset(buf, 0, 100*sizeof(char));
-      if(do_read(proc_array[i].connect_info.sockfd,buf)<0){
+      if(do_read(proc_array[i].connect_info.sockfd,buf)==NULL){
         perror("server: read");
       }
       proc_array[i].pid=atoi(buf);
@@ -163,7 +171,7 @@ int main(int argc, char *argv[])
 
       /* On recupere le numero de port de la socket */
       /* d'ecoute des processus distants */
-      if(do_read(proc_array[i].connect_info.sockfd, buf)<0){
+      if(do_read(proc_array[i].connect_info.sockfd, buf)==NULL){
         perror("server: read");
       }
       fflush(stdout);

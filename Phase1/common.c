@@ -116,25 +116,23 @@ int do_accept(int sockfd){
 }
 
 
-int do_write(int sockfd, char *buf){
+void do_write(int sockfd, char *buf){
   char *taille = malloc(sizeof(size_t));
   size_t len = strlen(buf);
   sprintf(taille, "%d", (int) len);
   write(sockfd, taille, sizeof(size_t));
   write(sockfd, buf, len);
-  return 0;
 }
 
-ssize_t do_read(int sockfd, char *buf){
+char* do_read(int sockfd, char *buf){
   ssize_t rl;
-  ssize_t size;
   char *taille = malloc(sizeof(size_t));
   rl = read(sockfd, taille, sizeof(size_t));
   if (rl == 0) {
-    return 0;
+    return NULL;
   }
-  size = read(sockfd, buf, (size_t) atoi(taille));
-  return size;
+  read(sockfd, buf, (size_t) atoi(taille));
+  return buf;
 }
 
 char * hostname_to_ip(char* hostname){

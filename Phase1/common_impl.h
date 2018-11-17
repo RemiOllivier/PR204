@@ -16,7 +16,7 @@
 /* de connexion des processus dsm */
 struct dsm_proc_conn  {
   int rank;
-  char* machine_name;
+  char machine_name[100];
   int sockfd;
   int port;
   /* a completer */
@@ -39,6 +39,6 @@ struct sockaddr_in init_serv_addr();
 int compte_lignes(FILE *fichier);
 char** tableau_mot(char **tableau, FILE *fichier, int n_ligne);
 int do_accept(int sockfd);
-int do_write(int sockfd, char *message);
-ssize_t do_read(int sockfd, char *buf);
+void do_write(int sockfd, char *message);
+char* do_read(int sockfd, char *buf);
 char * hostname_to_ip(char* hostname);

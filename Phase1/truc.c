@@ -19,7 +19,9 @@ int main(int argc, char *argv[])
    for(i= 0; i < argc ; i++)
      fprintf(stderr,"arg[%i] : %s\n",i,argv[i]);
 
-   sprintf(exec_path,"%s/%s",str,"titi");
+   sprintf(exec_path,"%s/%s",str,"/Bureau/PR204/Phase1/hello.txt");
+  //sprintf(exec_path,"%s/%s",str,"titi");
+   printf("exec_path: %s\n",exec_path);
    fd = open(exec_path,O_RDONLY);
    if(fd == -1) perror("open");
    fprintf(stdout,"================ Valeur du descripteur : %i\n",fd);

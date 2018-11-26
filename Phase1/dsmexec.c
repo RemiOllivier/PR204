@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     pid_t pid;
     int num_procs = 0;
     int i;
+    int k;
     FILE *fichier=NULL;
     fichier= fopen(argv[1],"r");
     num_procs = compte_lignes(fichier);
@@ -66,8 +67,7 @@ int main(int argc, char *argv[])
     /* + ecoute effective */
     int port_num=0;
     int sockfd = creer_socket(&port_num);
-    printf("port=%d\n", port_num);
-    /* creation des fils */
+        /* creation des fils */
     for(i = 0; i < num_procs ; i++) {
       // int pipe_stdout[2];
       // pipe(pipe_stdout);
@@ -76,7 +76,8 @@ int main(int argc, char *argv[])
       /* creation du tube pour rediriger stdout */
 
       /* creation du tube pour rediriger stderr */
-
+printf("hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\n");
+fflush(stdout);
       pid = fork();
       //printf("pis:%d\n", pid);
       if(pid == -1) ERROR_EXIT("fork");
@@ -106,18 +107,18 @@ int main(int argc, char *argv[])
         int numero_arg=3;
         char adresse[100];
         gethostname(adresse, len);
-        printf("%s\n", adresse);
+        //printf("%s\n", adresse);
         char **arg=malloc((argc+10)*sizeof(char*));
         char *port=malloc(sizeof(char));
         sprintf(port, "%d",port_num);
-        printf("%d\n", port_num);
+        //printf("%d\n", port_num);
         arg[0]="ssh";
         arg[1]=tableau[i];
         arg[2]="~/Documents/Enseirb/PR204/Phase1/bin/dsmwrap";
         arg[3]=adresse;
         arg[4]=port;
         arg[5]=argv[2];
-        
+
         for (numero_arg=3; numero_arg<argc; numero_arg++){
           arg[3+numero_arg]=argv[numero_arg];
         }
@@ -128,23 +129,24 @@ int main(int argc, char *argv[])
       }
 
       else  if(pid > 0) { /* pere */
-        printf("je suis pere\n");
+        //printf("je suis pere\n");
         fflush(stdout);
         // close(pipe_stdout[0]);
         // close(pipe_stderr[0]);
         /* fermeture des extremites des tubes non utiles */
         num_procs_creat++;
-        break;
+        
       }
     }
-
+    struct sockaddr_in sinclient;
+    socklen_t len;
+    len = sizeof(sinclient);
     for(i = 0; i < num_procs ; i++){
       //wait(NULL);
       /* on accepte les connexions des processus dsm */
-      struct sockaddr_in sinclient;
-      socklen_t len;
-      len = sizeof(sinclient);
       proc_array[i].connect_info.sockfd = accept(sockfd,(struct sockaddr*)&sinclient,&len);
+      printf("cccccccccccccccccccc\n");
+      fflush(stdout);
       if(proc_array[i].connect_info.sockfd<0){
         perror("server: accept");
       }
@@ -152,11 +154,12 @@ int main(int argc, char *argv[])
       /*  On recupere le nom de la machine distante */
       /* 1- d'abord la taille de la chaine */
       /* 2- puis la chaine elle-meme */
+      proc_array[i].connect_info.rank=i;
       memset(proc_array[i].connect_info.machine_name, 0, 100*sizeof(char));
       if(do_read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name)==NULL){
         perror("server: read");
       }
-      printf("machine name=%s\n", proc_array[i].connect_info.machine_name);
+      //printf("machine name=%s\n", proc_array[i].connect_info.machine_name);
       fflush(stdout);
 
       /* On recupere le pid du processus distant  */
@@ -166,7 +169,7 @@ int main(int argc, char *argv[])
         perror("server: read");
       }
       proc_array[i].pid=atoi(buf);
-      printf("pid=%d\n", proc_array[i].pid);
+    //  printf("pid=%d\n", proc_array[i].pid);
       fflush(stdout);
 
       /* On recupere le numero de port de la socket */
@@ -176,19 +179,30 @@ int main(int argc, char *argv[])
       }
       fflush(stdout);
       proc_array[i].connect_info.port=atoi(buf);
-      printf("port=%d\n", proc_array[i].connect_info.port);
+      //printf("portttttt=%d\n", proc_array[i].connect_info.port);
       fflush(stdout);
 
     }
+    char* buf=malloc(100);
+    sprintf(buf,"%d", num_procs);
 
+for(k= 0; k < num_procs ; k++){
     /* envoi du nombre de processus aux processus dsm*/
-
+    do_write(proc_array[k].connect_info.sockfd, buf);
     /* envoi des rangs aux processus dsm */
+    sprintf(buf,"%d", proc_array[k].connect_info.rank);
+    do_write(proc_array[k].connect_info.sockfd, buf);
 
     /* envoi des infos de connexion aux processus */
-
+    int j;
+    for(j=0;j<num_procs; j++){
+    sprintf(buf,"%d", proc_array[j].connect_info.port);
+    do_write(proc_array[k].connect_info.sockfd, buf);
+    do_write(proc_array[k].connect_info.sockfd, proc_array[j].connect_info.machine_name);
+  }
     /* gestion des E/S : on recupere les caracteres */
     /* sur les tubes de redirection de stdout/stderr */
+  }
     /* while(1)
     {
     je recupere les infos sur les tubes de redirection

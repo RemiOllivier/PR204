@@ -75,6 +75,7 @@ static void *dsm_comm_daemon( void *arg)
    return;
 }
 
+<<<<<<< HEAD
 /* retrouver à partir d'une adresse un numéro de page*/
 
 int address2num (char* addr)
@@ -82,6 +83,8 @@ int address2num (char* addr)
   return (((long int)(addr-BASE_ADDR))/(PAGE_SIZE))
 
 }
+=======
+>>>>>>> e9c63213f0a1f9ddeaedb1d5bbfbb00c0f58358c
 static int dsm_send(int dest,void *buf,size_t size)
 {
    /* a completer */

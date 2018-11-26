@@ -57,11 +57,11 @@ int main(int argc, char *argv[])
     for (i = 0; i < num_procs; i++) {
       tableau[i] = malloc(TAILLE_MAX);
     }
-    char buffer[TAILLE_BUFFER]; 
+    char buffer[TAILLE_BUFFER];
     int r;
     struct sigaction siga;
 
-  
+
 		// Pour le poll
 		struct pollfd* fds;
 
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     /* 1- on recupere le nombre de processus a lancer */
     /* 2- on recupere les noms des machines : le nom de */
     /* la machine est un des elements d'identification */
-      
+
     tableau=tableau_mot(tableau, fichier, num_procs);
 
 
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
         free(proc_array);
         close(pipe_stdout[1]);
         close(pipe_stderr[1]);
-        
+
             close(STDOUT_FILENO);
             int d=dup(pipe_stdout[0]);
             close(pipe_stdout[0]);
@@ -146,14 +146,14 @@ int main(int argc, char *argv[])
         /* jump to new prog : */
         execvp("ssh",arg);
       }
-   
+
       else  if(pid > 0) { /* pere */
         //printf("je suis pere\n");
-        fflush(stdout);
-        pipe_fd_out[i] = pipe_stdout[1];
-				pipe_fd_err[i] = pipe_stderr[1];
-        close(pipe_stdout[0]);
-        close(pipe_stderr[0]);
+        // fflush(stdout);
+        // pipe_fd_out[i] = pipe_stdout[1];
+				// pipe_fd_err[i] = pipe_stderr[1];
+        // close(pipe_stdout[0]);
+        // close(pipe_stderr[0]);
         /* fermeture des extremites des tubes non utiles */
         num_procs_creat++;
         //break;
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
 
 		num_procs = num_procs_creat;
     fds = malloc((2*num_procs_creat + 1) * sizeof(*fds));
-  
+
 
     for(i = 0; i < 2*num_procs_creat; i++) {
 			if(i < num_procs_creat) {
@@ -176,9 +176,9 @@ int main(int argc, char *argv[])
 		}
 		fds[i].fd = pipe_exit[0];
 		fds[i].events = POLLIN;
-  
 
-        
+
+
      // }
 //}
     struct sockaddr_in sinclient;
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     len = sizeof(sinclient);
     for(i = 0; i < num_procs ; i++){
 
-      
+
       //wait(NULL);
       /* on accepte les connexions des processus dsm */
       proc_array[i].connect_info.sockfd = accept(sockfd,(struct sockaddr*)&sinclient,&len);
@@ -246,6 +246,7 @@ for(k= 0; k < num_procs ; k++){
     do_write(proc_array[k].connect_info.sockfd, buf);
     do_write(proc_array[k].connect_info.sockfd, proc_array[j].connect_info.machine_name);
   }
+}
     /* gestion des E/S : on recupere les caracteres */
     /* sur les tubes de redirection de stdout/stderr */
      while(1)
@@ -289,13 +290,13 @@ for(k= 0; k < num_procs ; k++){
 					// }
 				}
 			}
-	
+
       /*
     je recupere les infos sur les tubes de redirection
     jusqu'à ce qu'ils soient inactifs (ie fermes par les
     processus dsm ecrivains de l'autre cote ...)*/
   }
-  
+
 
   /* on attend les processus fils */
 

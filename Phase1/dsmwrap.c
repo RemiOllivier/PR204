@@ -4,11 +4,10 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include<arpa/inet.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
-  printf("ggggggggggggggggggggg\n");
-  fflush(stdout);
   /* processus intermediaire pour "nettoyer" */
   /* la liste des arguments qu'on va passer */
   /* a la commande a executer vraiment */
@@ -23,7 +22,6 @@ int main(int argc, char **argv)
   inet_aton(hostname_to_ip(argv[1]), &sin.sin_addr);
   //printf("adresse:%s\n", hostname_to_ip(argv[1]));
   //printf("port:%d\n", htons(atoi(argv[2])));
-  fflush(stdout);
 
   //get the socket
 
@@ -34,7 +32,6 @@ int main(int argc, char **argv)
   memset(adresse, 0, 100);
   gethostname(adresse, 100);
   //printf("adresse:%s\n", adresse);
-  fflush(stdout);
 
   int sockfd= socket(AF_INET, SOCK_STREAM,0);
   if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
@@ -87,21 +84,27 @@ proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
       printf("numport=%d, nom=%s\n",   proc_array[j].connect_info.port,proc_array[j].connect_info.machine_name);
       fflush(stdout);
     }
-
+    printf("kkkkkkkkkkkkkkkkkkkk\n");
+    fflush(stdout);
   /* on execute la bonne commande */
-  char **arg=malloc((argc-3)*sizeof(char*));
+  char **arg=malloc((argc-3)*sizeof(char));
   arg[0]=argv[3];
   int numero_arg;
-  for (numero_arg=1; numero_arg<argc; numero_arg++){
+  for (numero_arg=1; numero_arg<argc-3; numero_arg++){
     arg[numero_arg]=argv[numero_arg+3];
   }
-  arg[argc]=NULL;
+  arg[argc-3]=NULL;
 
 
   /* jump to new prog : */
-
+free(proc_array);
+free(port_envoi);
+free(adresse);
+free(buf);
+free(pid_envoi);
   if(execvp(argv[3],arg)==-1){
     perror("dsmwrap exec: ");
   }
-  exit (0);
+
+  exit(EXIT_SUCCESS);
 }

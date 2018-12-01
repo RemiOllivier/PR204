@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <unistd.h>
+#include <stdlib.h>
 #define TAILLE_MAX 128
 #define TAILLE_BUFFER 1024
 
@@ -106,19 +108,19 @@ int main(int argc, char *argv[])
 
       if (pid == 0) { /* fils */
         free(proc_array);
-        close(pipe_stdout[1]);
-        close(pipe_stderr[1]);
-
-            close(STDOUT_FILENO);
-            int d=dup(pipe_stdout[0]);
-            close(pipe_stdout[0]);
-            close(STDERR_FILENO);
-            fprintf(stdout,"%d:%u\n",i, d);
-             /* redirection stdout */
-
-            int ds=dup(pipe_stderr[0]);
-            close(pipe_stderr[0]);
-            fprintf(stdout,"%d:%u\n", i,ds);
+        // close(pipe_stdout[1]);
+        // close(pipe_stderr[1]);
+        //
+        //     close(STDOUT_FILENO);
+        //     int d=dup(pipe_stdout[0]);
+        //     close(pipe_stdout[0]);
+        //     close(STDERR_FILENO);
+        //     fprintf(stdout,"%d:%u\n",i, d);
+        //      /* redirection stdout */
+        //
+        //     int ds=dup(pipe_stderr[0]);
+        //     close(pipe_stderr[0]);
+            //fprintf(stdout,"%d:%u\n", i,ds);
             /* redirection stderr */
 
         /* Creation du tableau d'arguments pour le ssh */
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
         //printf("%d\n", port_num);
         arg[0]="ssh";
         arg[1]=tableau[i];
-        arg[2]="~/Bureau/PR204/Phase1/bin/dsmwrap";
+        arg[2]="~/Documents/Enseirb/PR204/Phase1/bin/dsmwrap";
         arg[3]=adresse;
         arg[4]=port;
         arg[5]=argv[2];
@@ -190,7 +192,6 @@ int main(int argc, char *argv[])
       //wait(NULL);
       /* on accepte les connexions des processus dsm */
       proc_array[i].connect_info.sockfd = accept(sockfd,(struct sockaddr*)&sinclient,&len);
-      printf("cccccccccccccccccccc\n");
       fflush(stdout);
       if(proc_array[i].connect_info.sockfd<0){
         perror("server: accept");

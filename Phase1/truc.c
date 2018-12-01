@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdlib.h>
 
 int main(int argc, char *argv[])
 {
@@ -16,10 +17,12 @@ int main(int argc, char *argv[])
    fprintf(stdout,"Working dir is %s\n",str);
    fflush(stdout);
    fprintf(stdout,"Number of args : %i\n", argc);
-   for(i= 0; i < argc ; i++)
+   for(i= 0; i < argc ; i++){
      fprintf(stderr,"arg[%i] : %s\n",i,argv[i]);
+     fflush(stderr);
+   }
 
-   sprintf(exec_path,"%s/%s",str,"/Bureau/PR204/Phase1/hello.txt");
+   sprintf(exec_path,"%s/%s",str,"Documents/Enseirb/PR204/Phase1/hello.txt");
   //sprintf(exec_path,"%s/%s",str,"titi");
    printf("exec_path: %s\n",exec_path);
    fd = open(exec_path,O_RDONLY);
@@ -28,6 +31,6 @@ int main(int argc, char *argv[])
 
    fflush(stdout);
    fflush(stderr);
-   sleep(1);
-   return 0;
+
+return 0;
 }

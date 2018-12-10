@@ -73,6 +73,8 @@ int j;
 dsm_proc_t *proc_array = NULL;
 proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
     for(j=0;j<nb_procs; j++){
+      printf("nb_proc=%d\n", nb_procs);
+      fflush(stdout);
       proc_array[j].connect_info.rank=j;
       if(do_read(sockfd, buf)==NULL){
         perror("server: read");
@@ -87,7 +89,7 @@ proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
     printf("kkkkkkkkkkkkkkkkkkkk\n");
     fflush(stdout);
   /* on execute la bonne commande */
-  char **arg=malloc((argc-3)*sizeof(char));
+  char **arg=malloc((argc-2)*sizeof(char));
   arg[0]=argv[3];
   int numero_arg;
   for (numero_arg=1; numero_arg<argc-3; numero_arg++){
@@ -105,6 +107,6 @@ free(pid_envoi);
   if(execvp(argv[3],arg)==-1){
     perror("dsmwrap exec: ");
   }
-
+free(arg);
   exit(EXIT_SUCCESS);
 }

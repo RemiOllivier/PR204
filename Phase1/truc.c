@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
    if(fd == -1) perror("open");
    fprintf(stdout,"================ Valeur du descripteur : %i\n",fd);
 
+   close(fd);
    fflush(stdout);
    fflush(stderr);
-
-return 0;
+   return 0;
 }

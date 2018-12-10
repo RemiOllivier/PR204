@@ -230,9 +230,10 @@ int main(int argc, char *argv[])
 
     }
     char* buf=malloc(100);
-    sprintf(buf,"%d", num_procs);
+
 
 for(k= 0; k < num_procs ; k++){
+  sprintf(buf,"%d", num_procs);
     /* envoi du nombre de processus aux processus dsm*/
     do_write(proc_array[k].connect_info.sockfd, buf);
     /* envoi des rangs aux processus dsm */
@@ -305,7 +306,7 @@ for(k= 0; k < num_procs ; k++){
   free(pipe_fd_out);
   free(pipe_fd_err);
   free(fds);
-
+  free(buf);
   /* on ferme la socket d'ecoute */
   close(sockfd);
 }

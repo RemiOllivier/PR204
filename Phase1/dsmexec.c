@@ -108,19 +108,21 @@ int main(int argc, char *argv[])
 
       if (pid == 0) { /* fils */
         free(proc_array);
-        // close(pipe_stdout[1]);
-        // close(pipe_stderr[1]);
-        //
-        //     close(STDOUT_FILENO);
-        //     int d=dup(pipe_stdout[0]);
-        //     close(pipe_stdout[0]);
-        //     close(STDERR_FILENO);
-        //     fprintf(stdout,"%d:%u\n",i, d);
-        //      /* redirection stdout */
-        //
-        //     int ds=dup(pipe_stderr[0]);
-        //     close(pipe_stderr[0]);
-            //fprintf(stdout,"%d:%u\n", i,ds);
+        close(pipe_stdout[0]);
+        close(pipe_stderr[0]);
+
+            close(STDOUT_FILENO);
+            int d=dup(pipe_stdout[1]);
+            printf("descipteur=%d", d);
+            close(pipe_stdout[1]);
+            close(STDERR_FILENO);
+            fprintf(stdout,"%d:%u\n",i, d);
+             /* redirection stdout */
+
+            int ds=dup(pipe_stderr[1]);
+            close(pipe_stderr[1]);
+            fprintf(stdout,"%d:%u\n", i,ds);
+            fflush(stdout);
             /* redirection stderr */
 
         /* Creation du tableau d'arguments pour le ssh */
@@ -152,10 +154,10 @@ int main(int argc, char *argv[])
       else  if(pid > 0) { /* pere */
         //printf("je suis pere\n");
         // fflush(stdout);
-        // pipe_fd_out[i] = pipe_stdout[1];
-				// pipe_fd_err[i] = pipe_stderr[1];
-        // close(pipe_stdout[0]);
-        // close(pipe_stderr[0]);
+        pipe_fd_out[i] = pipe_stdout[1];
+				pipe_fd_err[i] = pipe_stderr[1];
+        close(pipe_stdout[1]);
+        close(pipe_stderr[1]);
         /* fermeture des extremites des tubes non utiles */
         num_procs_creat++;
         //break;
@@ -175,9 +177,10 @@ int main(int argc, char *argv[])
 				fds[i].fd = pipe_fd_err[i-num_procs_creat];
 				fds[i].events = POLLIN;
 			}
+      fds[i+1].fd = pipe_exit[0];
+  		fds[i+1].events = POLLIN;
 		}
-		fds[i].fd = pipe_exit[0];
-		fds[i].events = POLLIN;
+
 
 
 
@@ -268,10 +271,10 @@ for(k= 0; k < num_procs ; k++){
 						pipe_fd_out[i] = 0;
 						fds[i].fd = 0;
 					}
-					// else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
-					// 	printf("[Proc %d : %s : stdout] %s", i, arg[i], buffer);
-					// 	fflush(stdout);
-					// }
+					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
+						printf("[Proc %d : %d : stdout] %s", i, pipe_fd_out[i], buffer);
+						fflush(stdout);
+					}
 				}
 			}
 
@@ -286,10 +289,10 @@ for(k= 0; k < num_procs ; k++){
 						pipe_fd_err[i] = 0;
 						fds[i].fd = 0;
 					}
-					// else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
-					// 	printf("[Proc %d : %s : stderr] %s", i-num_procs_creat, arg[i-num_procs_creat], buffer);
-					// 	fflush(stdout);
-					// }
+					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
+						printf("[Proc %d : %d : stderr] %s", i-num_procs_creat, pipe_fd_err[i-num_procs_creat], buffer);
+						fflush(stdout);
+					}
 				}
 			}
 

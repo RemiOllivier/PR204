@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
      fflush(stderr);
    }
 
-   sprintf(exec_path,"%s/%s",str,"Documents/Enseirb/PR204/Phase1/hello.txt");
+   sprintf(exec_path,"%s/%s",str,"Bureau/PR204/Phase1/hello.txt");
   //sprintf(exec_path,"%s/%s",str,"titi");
    printf("exec_path: %s\n",exec_path);
    fd = open(exec_path,O_RDONLY);

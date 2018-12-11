@@ -15,13 +15,11 @@ int main(int argc, char **argv)
   /* creation d'une socket pour se connecter au */
   /* au lanceur et envoyer/recevoir les infos */
   /* necessaires pour la phase dsm_init */
+
   struct sockaddr_in sin;
   sin.sin_family=AF_INET;
   sin.sin_port=htons(atoi(argv[2]));
-  //memcpy(hostname_to_ip(argv[1]), &sin->sin_addr, sizeof(sin->sin_addr));
   inet_aton(hostname_to_ip(argv[1]), &sin.sin_addr);
-  //printf("adresse:%s\n", hostname_to_ip(argv[1]));
-  //printf("port:%d\n", htons(atoi(argv[2])));
 
   //get the socket
 
@@ -31,7 +29,6 @@ int main(int argc, char **argv)
   char *adresse=malloc(100);
   memset(adresse, 0, 100);
   gethostname(adresse, 100);
-  //printf("adresse:%s\n", adresse);
 
   int sockfd= socket(AF_INET, SOCK_STREAM,0);
   if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
@@ -68,7 +65,7 @@ int main(int argc, char **argv)
   if(do_read(sockfd, buf)==NULL){
     perror("server: read");
   }
-  int mon_rang=atoi(buf);
+
 int j;
 dsm_proc_t *proc_array = NULL;
 proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
@@ -88,6 +85,7 @@ proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
     }
     printf("kkkkkkkkkkkkkkkkkkkk\n");
     fflush(stdout);
+    
   /* on execute la bonne commande */
   char **arg=malloc((argc-2)*sizeof(char));
   arg[0]=argv[3];

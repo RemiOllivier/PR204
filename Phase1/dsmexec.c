@@ -291,7 +291,7 @@ for(k= 0; k < num_procs ; k++){
 					}
 					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
 						printf("[Proc %d : %d : stderr] %s", i-num_procs_creat, pipe_fd_err[i-num_procs_creat], buffer);
-						fflush(stdout);
+						fflush(stderr);
 					}
 				}
 			}

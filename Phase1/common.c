@@ -40,7 +40,6 @@ int creer_socket(int *port_num) {
   }
 
   *port_num = ntohs(serv_addr.sin_port);
-  printf("port num cote server=%d\n", *port_num);
 
   return fd;
 
@@ -100,7 +99,6 @@ char** tableau_mot(char **tableau, FILE *fichier, int n_ligne){
   int i;
   for(i=0;i<n_ligne;i++){
     fscanf(fichier, "%s", tableau[i]);
-    printf("tableau[%d]=%s",i,tableau[i]);
   }
   fclose(fichier);
   return tableau;

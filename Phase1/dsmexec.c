@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #define TAILLE_MAX 128
-#define TAILLE_BUFFER 1024
+#define TAILLE_BUFFER 2048
 
 /* variables globales */
 int pipe_exit[2];
@@ -147,6 +147,10 @@ int main(int argc, char *argv[])
       }
 
       else  if(pid > 0) { /* pere */
+        memset(proc_array[i].connect_info.machine_name, 0, 100*sizeof(char));
+        proc_array[i].connect_info.rank=i;
+        strcpy(proc_array[i].connect_info.machine_name,tableau[i]);
+        proc_array[i].connect_info.sockfd=0;
         pipe_fd_out[i] = pipe_stdout[0];
 				pipe_fd_err[i] = pipe_stderr[0];
         /* fermeture des extremites des tubes non utiles */
@@ -178,34 +182,42 @@ int main(int argc, char *argv[])
     for(i = 0; i < num_procs ; i++){
 
       /* on accepte les connexions des processus dsm */
-      proc_array[i].connect_info.sockfd = accept(sockfd,(struct sockaddr*)&sinclient,&len);
-      if(proc_array[i].connect_info.sockfd<0){
+      int connexion = accept(sockfd,(struct sockaddr*)&sinclient,&len);
+      if(connexion<0){
         perror("server: accept");
       }
+
 
       /*  On recupere le nom de la machine distante */
       /* 1- d'abord la taille de la chaine */
       /* 2- puis la chaine elle-meme */
-      proc_array[i].connect_info.rank=i;
-      memset(proc_array[i].connect_info.machine_name, 0, 100*sizeof(char));
-      if(do_read(proc_array[i].connect_info.sockfd, proc_array[i].connect_info.machine_name)==NULL){
+
+        char *nom_machine=malloc(100*sizeof(char));
+      if(do_read(connexion, nom_machine)==NULL){
         perror("server: read");
       }
+      int j;
+      for(j = 0; j < num_procs ; j++){
+        if(strcmp(nom_machine,proc_array[j].connect_info.machine_name)==0 && proc_array[j].connect_info.sockfd==0){ //la condition est pas bonne
+          break;
+        }
+      }
+
+      proc_array[j].connect_info.sockfd=connexion;
 
       /* On recupere le pid du processus distant  */
       char* buf=malloc(100);
       memset(buf, 0, 100*sizeof(char));
-      if(do_read(proc_array[i].connect_info.sockfd,buf)==NULL){
+      if(do_read(proc_array[j].connect_info.sockfd,buf)==NULL){
         perror("server: read");
       }
-      proc_array[i].pid=atoi(buf);
 
       /* On recupere le numero de port de la socket */
       /* d'ecoute des processus distants */
-      if(do_read(proc_array[i].connect_info.sockfd, buf)==NULL){
+      if(do_read(proc_array[j].connect_info.sockfd, buf)==NULL){
         perror("server: read");
       }
-      proc_array[i].connect_info.port=atoi(buf);
+      proc_array[j].connect_info.port=atoi(buf);
 
     }
 
@@ -221,7 +233,7 @@ for(k= 0; k < num_procs ; k++){
 
     /* envoi des infos de connexion aux processus */
     int j;
-    for(j=0;j<num_procs; j++){
+    for(j=0;j<k; j++){
     sprintf(buf,"%d", proc_array[j].connect_info.port);
     do_write(proc_array[k].connect_info.sockfd, buf);
     do_write(proc_array[k].connect_info.sockfd, proc_array[j].connect_info.machine_name);
@@ -239,8 +251,8 @@ for(k= 0; k < num_procs ; k++){
 			{
 			    if(fds[i].revents == POLLIN)
 				{
-			    	memset(buffer, 0, sizeof(char)*1024);
-					r = read(pipe_fd_out[i], buffer, sizeof(char)*TAILLE_BUFFER);
+			    	memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
+					r = read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
 					if(r == 0) {
 						// close(fds[i].fd);
 						// pipe_fd_out[i] = 0;
@@ -258,8 +270,8 @@ for(k= 0; k < num_procs ; k++){
 			{
 				if(fds[i].revents == POLLIN)
 				{
-					memset(buffer, 0, sizeof(char)*1024);
-					r = read(pipe_fd_err[i-num_procs], buffer, sizeof(char)*TAILLE_BUFFER);
+					memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
+					r = read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
 					if(r == 0) {
 						// close(fds[i].fd);
 						// pipe_fd_err[i] = 0;
@@ -267,7 +279,7 @@ for(k= 0; k < num_procs ; k++){
 
 					}
 					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
-            printf("[Proc %d : %d : stderr] %s", i-num_procs_creat, pipe_fd_err[i-num_procs_creat], buffer);
+            printf("[Proc %d : stderr] %s", i-num_procs, buffer);
             fflush(stdout);
 					}
 				}

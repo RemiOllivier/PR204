@@ -51,7 +51,7 @@ int creer_socket(int *port_num) {
 
 /* Vous pouvez ecrire ici toutes les fonctions */
 /* qui pourraient etre utilisees par le lanceur */
-/* et le processus intermediaire. N'oubliez pas */
+/* et le processus. N'oubliez pas */
 /* de declarer le prototype de ces nouvelles */
 /* fonctions dans common_impl.h */
 

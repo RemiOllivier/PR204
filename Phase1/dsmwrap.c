@@ -1,4 +1,5 @@
 #include "common_impl.h"
+#include "dsm.h"
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -38,14 +39,19 @@ int main(int argc, char **argv)
     perror("client: connect");
   }
 
+
   /* Envoi du nom de machine au lanceur */
   do_write(sockfd, adresse);
+
 
   /* Envoi du pid au lanceur */
   pid_t pid=getpid();
   char *pid_envoi=malloc(10*sizeof(char));;
   sprintf(pid_envoi,"%d", pid);
   do_write(sockfd, pid_envoi);
+
+
+
 
   /* Creation de la socket d'ecoute pour les */
   /* connexions avec les autres processus dsm */
@@ -56,29 +62,8 @@ int main(int argc, char **argv)
   /* processus dsm */
   sprintf(port_envoi,"%d", port);
   do_write(sockfd, port_envoi);
-  char* buf=malloc(100);
-  memset(buf, 0, 100*sizeof(char));
-  if(do_read(sockfd, buf)==NULL){
-    perror("server: read");
-  }
-  int nb_procs=atoi(buf);
-  if(do_read(sockfd, buf)==NULL){
-    perror("server: read");
-  }
 
-int j;
-dsm_proc_t *proc_array = NULL;
-proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
-    for(j=0;j<nb_procs; j++){
-      proc_array[j].connect_info.rank=j;
-      if(do_read(sockfd, buf)==NULL){
-        perror("server: read");
-      }
-      proc_array[j].connect_info.port=atoi(buf);
-      if(do_read(sockfd,  proc_array[j].connect_info.machine_name)==NULL){
-        perror("server: read");
-      }
-    }
+  char *chaine=dsm_init(sockfd, socket_ecoute);
 
   /* on execute la bonne commande */
   char **arg=malloc((argc-2)*sizeof(char));
@@ -91,10 +76,10 @@ proc_array=malloc(nb_procs*sizeof(dsm_proc_t));
 
 
   /* jump to new prog : */
-free(proc_array);
+//free(proc_array);
 free(port_envoi);
 free(adresse);
-free(buf);
+//free(buf);
 free(pid_envoi);
   if(execvp(argv[3],arg)==-1){
     perror("dsmwrap exec: ");

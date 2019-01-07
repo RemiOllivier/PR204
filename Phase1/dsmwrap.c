@@ -51,8 +51,6 @@ int main(int argc, char **argv)
   do_write(sockfd, pid_envoi);
 
 
-
-
   /* Creation de la socket d'ecoute pour les */
   /* connexions avec les autres processus dsm */
   int socket_ecoute=creer_socket(&port);
@@ -74,12 +72,10 @@ int main(int argc, char **argv)
   }
   arg[argc-3]=NULL;
 
-
   /* jump to new prog : */
-//free(proc_array);
+
 free(port_envoi);
 free(adresse);
-//free(buf);
 free(pid_envoi);
   if(execvp(argv[3],arg)==-1){
     perror("dsmwrap exec: ");

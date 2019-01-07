@@ -12,7 +12,6 @@
 #define TAILLE_BUFFER 2048
 
 /* variables globales */
-int pipe_exit[2];
 
 /* un tableau gerant les infos d'identification */
 /* des processus dsm */
@@ -20,11 +19,12 @@ dsm_proc_t *proc_array = NULL;
 
 /* le nombre de processus effectivement crees */
 volatile int num_procs_creat = 0;
+sig_atomic_t child_exit_status;
 
 void usage(void)
 {
   fprintf(stdout,"Usage : dsmexec machine_file executable arg1 arg2 ...\n");
-  fprintf(stdout,"./bin/dsmexec machine_file ~/Documents/Enseirb/PR204/Phase1/bin/truc coucouco\n");
+  fprintf(stdout,"./bin/dsmexec machine_file ~/Desktop/PR204/Phase1/bin/truc arg1 arg 2...\n");
   fflush(stdout);
   exit(EXIT_FAILURE);
 }
@@ -33,9 +33,12 @@ void sigchld_handler(int sig)
 {
   /* on traite les fils qui se terminent */
   /* pour eviter les zombies */
-  // wait(NULL);
-	// num_procs_creat--;
-//  write(pipe_exit[1], 0, 1);
+  int status;
+  waitpid(-1,&status,WNOHANG);
+  child_exit_status=status;
+  num_procs_creat--;
+  printf("Processus fils zombie traité il reste %d processus en vie\n",num_procs_creat);
+
 }
 
 
@@ -59,24 +62,22 @@ int main(int argc, char *argv[])
       tableau[i] = malloc(TAILLE_MAX);
     }
     char buffer[TAILLE_BUFFER];
-    int r;
-    struct sigaction siga;
 
 
-		struct pollfd* fds;
+    struct pollfd* fds;
 
-		int* pipe_fd_out; // Tableau de fd de pipe
-		int* pipe_fd_err;
+    int* pipe_fd_out; // Tableau de fd de pipe
+    int* pipe_fd_err;
     pipe_fd_out = malloc(num_procs*sizeof(int));
-		pipe_fd_err = malloc(num_procs*sizeof(int));
-    pipe(pipe_exit);
+    pipe_fd_err = malloc(num_procs*sizeof(int));
 
     /* Mise en place d'un traitant pour recuperer les fils zombies*/
     /* XXX.sa_handler = sigchld_handler; */
+    struct sigaction siga;
+
     memset(&siga, 0, sizeof(struct sigaction));
-		siga.sa_handler = sigchld_handler;
-		siga.sa_flags = SA_RESTART;
-		sigaction(17, &siga, NULL);
+    siga.sa_handler = sigchld_handler;
+    sigaction(SIGCHLD, &siga, NULL);
 
     /* lecture du fichier de machines */
     /* 1- on recupere le nombre de processus a lancer */
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
 
         arg[0]="ssh";
         arg[1]=tableau[i];
-        arg[2]="~/Documents/Enseirb/PR204/Phase1/bin/dsmwrap";
+        arg[2]="~/Desktop/PR204/Phase1/bin/dsmwrap";
         arg[3]=adresse;
         arg[4]=port;
         arg[5]=argv[2];
@@ -152,7 +153,7 @@ int main(int argc, char *argv[])
         strcpy(proc_array[i].connect_info.machine_name,tableau[i]);
         proc_array[i].connect_info.sockfd=0;
         pipe_fd_out[i] = pipe_stdout[0];
-				pipe_fd_err[i] = pipe_stderr[0];
+        pipe_fd_err[i] = pipe_stderr[0];
         /* fermeture des extremites des tubes non utiles */
         close(pipe_stdout[1]);
         close(pipe_stderr[1]);
@@ -160,27 +161,24 @@ int main(int argc, char *argv[])
       }
     }
 
-		num_procs = num_procs_creat;
+    num_procs = num_procs_creat;
     fds = malloc((2*num_procs_creat + 1) * sizeof(*fds));
 
     for(i = 0; i < 2*num_procs_creat; i++) {
-			if(i < num_procs_creat) {
-				fds[i].fd = pipe_fd_out[i];
-				fds[i].events = POLLIN;
-			}
-			else {
-				fds[i].fd = pipe_fd_err[i-num_procs_creat];
-				fds[i].events = POLLIN;
-			}
-      fds[i+1].fd = pipe_exit[0];
-  		fds[i+1].events = POLLIN;
-		}
+      if(i < num_procs_creat) {
+        fds[i].fd = pipe_fd_out[i];
+        fds[i].events = POLLIN;
+      }
+      else {
+        fds[i].fd = pipe_fd_err[i-num_procs_creat];
+        fds[i].events = POLLIN;
+      }
+    }
 
     struct sockaddr_in sinclient;
     socklen_t len;
     len = sizeof(sinclient);
     for(i = 0; i < num_procs ; i++){
-
       /* on accepte les connexions des processus dsm */
       int connexion = accept(sockfd,(struct sockaddr*)&sinclient,&len);
       if(connexion<0){
@@ -192,11 +190,13 @@ int main(int argc, char *argv[])
       /* 1- d'abord la taille de la chaine */
       /* 2- puis la chaine elle-meme */
 
-        char *nom_machine=malloc(100*sizeof(char));
+      char *nom_machine=malloc(100);
+      memset(nom_machine, 0, 100*sizeof(char));
       if(do_read(connexion, nom_machine)==NULL){
         perror("server: read");
       }
       int j;
+
       for(j = 0; j < num_procs ; j++){
         if(strcmp(nom_machine,proc_array[j].connect_info.machine_name)==0 && proc_array[j].connect_info.sockfd==0){ //la condition est pas bonne
           break;
@@ -221,88 +221,73 @@ int main(int argc, char *argv[])
 
     }
 
-char* buf=malloc(100);
-memset(buf, 0, 100*sizeof(char));
-for(k= 0; k < num_procs ; k++){
-    sprintf(buf,"%d", num_procs);
-    /* envoi du nombre de processus aux processus dsm*/
-    do_write(proc_array[k].connect_info.sockfd, buf);
-    /* envoi des rangs aux processus dsm */
-    sprintf(buf,"%d", proc_array[k].connect_info.rank);
-    do_write(proc_array[k].connect_info.sockfd, buf);
+    char* buf=malloc(100);
+    memset(buf, 0, 100*sizeof(char));
+    for(k= 0; k < num_procs ; k++){
+      sprintf(buf,"%d", num_procs);
+      /* envoi du nombre de processus aux processus dsm*/
+      do_write(proc_array[k].connect_info.sockfd, buf);
+      /* envoi des rangs aux processus dsm */
+      sprintf(buf,"%d", proc_array[k].connect_info.rank);
+      do_write(proc_array[k].connect_info.sockfd, buf);
 
-    /* envoi des infos de connexion aux processus */
-    int j;
-    for(j=0;j<k; j++){
-    sprintf(buf,"%d", proc_array[j].connect_info.port);
-    do_write(proc_array[k].connect_info.sockfd, buf);
-    do_write(proc_array[k].connect_info.sockfd, proc_array[j].connect_info.machine_name);
-  }
-}
+      /* envoi des infos de connexion aux processus */
+      int j;
+      for(j=0;j<k; j++){
+        sprintf(buf,"%d", proc_array[j].connect_info.port);
+        do_write(proc_array[k].connect_info.sockfd, buf);
+        do_write(proc_array[k].connect_info.sockfd, proc_array[j].connect_info.machine_name);
+      }
+    }
     /* gestion des E/S : on recupere les caracteres */
     /* sur les tubes de redirection de stdout/stderr */
-     while(1)
+    while(1)
     {
       poll(fds, 2*num_procs+1, -1);
-			if(fds[2*num_procs].revents == POLLIN)
-				break;
+      if(fds[2*num_procs].revents == POLLIN)
+      break;
 
-			for(i=0; i<num_procs; i++)
-			{
-			    if(fds[i].revents == POLLIN)
-				{
-			    	memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
-					r = read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
-					if(r == 0) {
-						// close(fds[i].fd);
-						// pipe_fd_out[i] = 0;
-						// fds[i].fd = 0;
-
-					}
-					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
-            printf("[Processus %d : stdout] %s\n", i, buffer);
+      for(i=0; i<num_procs; i++)
+      {
+        if(fds[i].revents == POLLIN)
+        {
+          memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
+          read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
+          if(fds[i].fd != 0 ){
+            printf("[Processus %d : %s: stdout] %s\n", i, proc_array[i].connect_info.machine_name, buffer);
             fflush(stdout);
-					}
-				}
-			}
+          }
+        }
+      }
 
-			for(i=num_procs; i<2*num_procs; i++)
-			{
-				if(fds[i].revents == POLLIN)
-				{
-					memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
-					r = read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
-					if(r == 0) {
-						// close(fds[i].fd);
-						// pipe_fd_err[i] = 0;
-						// fds[i].fd = 0;
-
-					}
-					else if(fds[i].fd != 0 && fds[i].fd != pipe_exit[0]){
-            printf("[Proc %d : stderr] %s", i-num_procs, buffer);
+      for(i=num_procs; i<2*num_procs; i++)
+      {
+        if(fds[i].revents == POLLIN)
+        {
+          memset(buffer, 0, sizeof(char)*TAILLE_BUFFER);
+          read(fds[i].fd, buffer, sizeof(char)*TAILLE_BUFFER);
+          if(fds[i].fd != 0 ){
+            printf("[Proc %d : %s : stderr] %s", i-num_procs, proc_array[i-num_procs].connect_info.machine_name,buffer);
             fflush(stdout);
-					}
-				}
-			}
+          }
+        }
+      }
 
       /*
-    je recupere les infos sur les tubes de redirection
-    jusqu'à ce qu'ils soient inactifs (ie fermes par les
-    processus dsm ecrivains de l'autre cote ...)*/
-  }
-int j;
-  for(j=0;j<num_procs; j++){
-    wait(NULL);
-  }
-  /* on attend les processus fils */
+      je recupere les infos sur les tubes de redirection
+      jusqu'à ce qu'ils soient inactifs (ie fermes par les
+      processus dsm ecrivains de l'autre cote ...)*/
+    }
 
-  /* on ferme les descripteurs proprement */
-  free(pipe_fd_out);
-  free(pipe_fd_err);
-  free(fds);
-  free(buf);
-  /* on ferme la socket d'ecoute */
-  close(sockfd);
-}
-exit(EXIT_SUCCESS);
+    /* on attend les processus fils */
+    //dans sig child handler
+    /* on ferme les descripteurs proprement */
+    free(pipe_fd_out);
+    free(pipe_fd_err);
+    free(fds);
+    free(buf);
+    /* on ferme la socket d'ecoute */
+    close(sockfd);
+  }
+  exit(EXIT_SUCCESS);
 }
